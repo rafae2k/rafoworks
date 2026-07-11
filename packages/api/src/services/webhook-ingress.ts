@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm"
-import type { IncomingWebhook, WebhookAdapterPort } from "@rafoworks/shared"
+import type { IncomingWebhook, SourceOrder, WebhookAdapterPort } from "@rafoworks/shared"
 import type { Database } from "../db/index.js"
 import { webhookLog } from "../db/schema.js"
 import { log } from "../lib/logger.js"
@@ -10,6 +10,8 @@ export interface WebhookQueueMessage {
   source: string
   eventType: string
   sourceOrderId: string | null
+  /** The order, if the webhook carried it (fat). Null ⟹ the workflow fetches it. */
+  order: SourceOrder | null
   payload: unknown
 }
 
@@ -40,6 +42,7 @@ export class WebhookIngressService {
     const payload = req.body
     const eventType = adapter.extractEventType(payload)
     const sourceOrderId = adapter.extractSourceOrderId(payload)
+    const order = adapter.extractOrder(payload)
     const hash = await adapter.computeHash(payload)
 
     // Fast-path dedup. The unique index on payload_hash is the real guard against a
@@ -72,7 +75,7 @@ export class WebhookIngressService {
       rawKey,
     })
 
-    await this.deps.queue.send({ eventId, source: adapter.source, eventType, sourceOrderId, payload })
+    await this.deps.queue.send({ eventId, source: adapter.source, eventType, sourceOrderId, order, payload })
     log.info({ event: "webhook.received", source: adapter.source, event_type: eventType, webhook_id: eventId })
     return { status: "queued", eventId, eventType }
   }

@@ -22,6 +22,7 @@
     "gate": "node scripts/deploy-gate.cjs --check",
     "docs:lint": "node scripts/docs-lint.cjs",
     "changelog:collate": "node scripts/changelog-collate.cjs",
+    "changelog:guard": "node scripts/changelog-guard.cjs",
     "check:sizes": "node scripts/check-file-sizes.cjs",
     "scrub": "node scripts/scrub-gate.cjs"
   },

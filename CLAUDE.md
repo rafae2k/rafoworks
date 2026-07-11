@@ -4,7 +4,7 @@ An event-driven integration platform on Cloudflare Workers — a batteries-inclu
 
 ## Stack
 
-- **Monorepo**: pnpm workspaces (`packages/shared`, `packages/api`, `packages/mcp`)
+- **Monorepo**: pnpm workspaces (`packages/shared`, `packages/api`, `packages/mcp`, `packages/web`)
 - **api**: Hono on Cloudflare Workers + D1 + KV + Queues + Workflows + R2
 - **mcp**: a read-only MCP server for agents, consuming the api via a `ToolsEntrypoint` service binding
 - **shared**: domain types, ports, pure rules — no I/O, consumed as source (JIT)
@@ -33,6 +33,7 @@ Hexagonal (ports & adapters) over an event-driven pipeline. The domain never imp
 - `packages/api/src/services/` — use cases (webhook ingress, order upsert, reconcile cron)
 - `packages/api/src/workflows/` — Cloudflare Workflows (durable execution)
 - `packages/api/src/lib/container.ts` — the composition root (wires concretes to ports)
+- `packages/web/` — a React + Vite dashboard, served as a Worker via Static Assets (`pnpm build` → `pnpm deploy:web`)
 
 ## Resilience invariants (structural rules)
 
@@ -77,11 +78,11 @@ Destructive prod writes (`UPDATE`/`DELETE`/`INSERT`/`ALTER`/`DROP`/`TRUNCATE`) a
 
 ## Development workflow
 
-Use the Shape Up loop via the [shapeup](https://github.com/rafae2k/claude-flow) plugin:
+Use the Shape Up loop via the [shapeup](https://github.com/rafae2k/rafoflow) plugin:
 
 ```
-/plugin marketplace add rafae2k/claude-flow
-/plugin install shapeup@rafo-flow
+/plugin marketplace add rafae2k/rafoflow
+/plugin install shapeup@rafoflow
 ```
 
 Then `/cycle "your goal"` runs research → shape → bet → scope → build → review → ship, writing artifacts to `docs/cycles/NN/`. Or drive each step by hand (`/shape`, `/scope`, `/engineer`, `/debug`, `/review`, `/ship`). This repo ships the enforcement that makes the method non-optional (the gate, docs-lint, changelog-guard); the plugin ships the method.

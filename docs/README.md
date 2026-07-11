@@ -24,4 +24,4 @@ An event-driven integration platform on Cloudflare Workers — the batteries-inc
 
 ## The loop
 
-Development runs the Shape Up loop via the [shapeup](https://github.com/rafae2k/claude-flow) plugin (`/cycle`, `/shape`, `/engineer`, `/debug`, …). This repo ships the _enforcement_ that makes the method non-optional — the deploy gate, docs-lint, and changelog guard. See the root [CLAUDE.md](../CLAUDE.md).
+Development runs the Shape Up loop via the [shapeup](https://github.com/rafae2k/rafoflow) plugin (`/cycle`, `/shape`, `/engineer`, `/debug`, …). This repo ships the _enforcement_ that makes the method non-optional — the deploy gate, docs-lint, and changelog guard. See the root [CLAUDE.md](../CLAUDE.md).

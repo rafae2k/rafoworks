@@ -1,5 +1,5 @@
 import { PermanentError } from "@rafoworks/shared"
-import type { IncomingWebhook, WebhookAdapterPort } from "@rafoworks/shared"
+import type { IncomingWebhook, SourceOrder, WebhookAdapterPort } from "@rafoworks/shared"
 
 // Webhook-side adapter for the same fictional source. Verifies the shared-secret
 // token, hashes the payload for dedup, and extracts the canonical event type + order
@@ -31,5 +31,22 @@ export class ExampleWebhookAdapter implements WebhookAdapterPort {
   extractSourceOrderId(payload: unknown): string | null {
     const p = payload as { order_id?: unknown }
     return typeof p.order_id === "string" ? p.order_id : null
+  }
+
+  extractOrder(payload: unknown): SourceOrder | null {
+    const p = payload as {
+      order_id?: unknown
+      status?: unknown
+      customer_name?: unknown
+      total_cents?: unknown
+    }
+    // Fat webhook = it carries at least the id and status. Otherwise it's thin.
+    if (typeof p.order_id !== "string" || typeof p.status !== "string") return null
+    return {
+      sourceOrderId: p.order_id,
+      rawStatus: p.status,
+      customerName: typeof p.customer_name === "string" ? p.customer_name : null,
+      totalCents: typeof p.total_cents === "number" ? p.total_cents : 0,
+    }
   }
 }

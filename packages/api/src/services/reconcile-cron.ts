@@ -44,6 +44,7 @@ export class ReconcileCron {
         source: row.source,
         eventType: row.eventType,
         sourceOrderId: row.sourceOrderId,
+        order: null, // reconcile doesn't have the payload; the workflow re-fetches
         payload: null,
       })
     }

@@ -28,11 +28,16 @@ describe("WebhookIngressService (seam: real D1)", () => {
     const { queue, sent } = fakeQueue()
     const ingress = new WebhookIngressService({ db, queue })
 
-    const res = await ingress.ingest(adapter, webhook({ event: "order.paid", order_id: "o-seam-1" }))
+    const res = await ingress.ingest(
+      adapter,
+      webhook({ event: "order.paid", order_id: "o-seam-1", status: "paid", customer_name: "Ada", total_cents: 4990 }),
+    )
 
     expect(res.status).toBe("queued")
     expect(sent).toHaveLength(1)
     expect(sent[0].sourceOrderId).toBe("o-seam-1")
+    // fat webhook ⟹ the order rides along, so the workflow needs no external fetch
+    expect(sent[0].order?.rawStatus).toBe("paid")
     const rows = await db.select().from(webhookLog).where(eq(webhookLog.id, res.eventId))
     expect(rows[0]?.status).toBe("queued")
   })

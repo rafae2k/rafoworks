@@ -1,3 +1,5 @@
+import type { SourceOrder } from "./order-source.js"
+
 // Port: platform-specific webhook handling. Each source that sends us webhooks has
 // an adapter implementing this — auth, dedup hashing, event-type extraction.
 
@@ -16,6 +18,14 @@ export interface WebhookAdapterPort {
 
   /** Extract the source order id the event refers to. */
   extractSourceOrderId(payload: unknown): string | null
+
+  /**
+   * Extract the order itself IF the webhook carries it ("fat" webhook). Returns
+   * null for a "thin" webhook that only names the order — then the workflow fetches
+   * the full order from the source adapter. Supporting both is realistic: some
+   * vendors send everything, some send just an id.
+   */
+  extractOrder(payload: unknown): SourceOrder | null
 }
 
 export interface IncomingWebhook {

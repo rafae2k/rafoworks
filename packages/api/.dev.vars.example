@@ -1,0 +1,4 @@
+# Copy to `.dev.vars` for local `wrangler dev`. These are the api worker's secrets in
+# dev (in production, set them with `wrangler secret put`). `.dev.vars` is gitignored.
+EXAMPLE_API_TOKEN="dev-example-token"
+EXAMPLE_WEBHOOK_TOKEN="dev-webhook-token"

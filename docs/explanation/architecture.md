@@ -23,6 +23,7 @@ webhook ──▶ ingress ──▶ [webhook-events queue] ──▶ dispatch �
 - **`packages/shared`** — the domain: entities, port interfaces, pure rules, the event envelope, the error taxonomy. No I/O, no dependencies. Consumed as source (JIT), so what typecheck validates is exactly what ships.
 - **`packages/api`** — the Worker. Adapters implement the ports; services are use cases; workflows are durable execution; the composition root (`lib/container.ts`) wires concretes to ports.
 - **`packages/mcp`** — a read-only MCP server that reaches the api's `ToolsEntrypoint` over a service binding, giving an agent a safe window in.
+- **`packages/web`** — a React + Vite dashboard, served as a Worker via Static Assets, reading from the api.
 
 ## Resilience invariants
 

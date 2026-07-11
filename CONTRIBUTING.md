@@ -22,7 +22,7 @@ pnpm gate   # typecheck + lint + build + test + docs-lint + changelog-guard
 
 ## How we work
 
-This repo uses the Shape Up loop via the [shapeup](https://github.com/rafae2k/claude-flow) plugin. For anything non-trivial, run `/cycle "your goal"` (or drive `/shape`, `/scope`, `/engineer`, `/debug` by hand) and leave the artifact trail in `docs/cycles/NN/`.
+This repo uses the Shape Up loop via the [shapeup](https://github.com/rafae2k/rafoflow) plugin. For anything non-trivial, run `/cycle "your goal"` (or drive `/shape`, `/scope`, `/engineer`, `/debug` by hand) and leave the artifact trail in `docs/cycles/NN/`.
 
 Two rules that the gate enforces:
 

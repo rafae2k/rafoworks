@@ -68,6 +68,7 @@ async function dispatch(env: Env, msg: WebhookQueueMessage): Promise<void> {
         source: msg.source,
         eventType: msg.eventType,
         sourceOrderId: msg.sourceOrderId,
+        order: msg.order,
       },
     })
   }

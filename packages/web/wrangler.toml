@@ -1,0 +1,10 @@
+name = "rafoworks-web"
+compatibility_date = "2025-04-01"
+
+# React SPA served as a Worker via Static Assets (built by `pnpm build` into ./dist).
+# not_found_handling = single-page-application routes unknown paths to index.html so
+# client-side routing works. This is an assets-only worker — no server script needed;
+# add a `main` entry if you later want to run code in front of the assets.
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"

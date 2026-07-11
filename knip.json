@@ -10,6 +10,10 @@
     },
     "packages/mcp": {
       "project": ["src/**/*.ts"]
+    },
+    "packages/web": {
+      "entry": ["index.html"],
+      "project": ["src/**/*.{ts,tsx}"]
     }
   },
   "ignoreExportsUsedInFile": true

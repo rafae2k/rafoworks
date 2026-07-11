@@ -29,6 +29,9 @@ jobs:
       - name: test
         run: pnpm test
 
+      - name: build
+        run: pnpm build
+
       - name: docs-lint
         run: pnpm docs:lint
 
