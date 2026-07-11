@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types"]
+    // No `paths`, no project `references` on purpose: @rafoworks/shared resolves
+    // through the SAME door esbuild/wrangler use — package.json#exports -> ./src/*.ts
+    // (moduleResolution: "bundler"). One source of truth: what tsc validates is
+    // exactly what the bundler ships. Reintroducing `paths` or a dist build in
+    // shared opens a typecheck-vs-deploy divergence.
+  },
+  "include": ["src/**/*"]
+}

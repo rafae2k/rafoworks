@@ -1,0 +1,39 @@
+{
+  "name": "rafoworks",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.7.1",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "deploy": "pnpm --filter @rafoworks/api run deploy",
+    "deploy:api": "pnpm --filter @rafoworks/api run deploy",
+    "deploy:mcp": "pnpm --filter @rafoworks/mcp run deploy",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "pnpm --filter @rafoworks/shared test:coverage && pnpm --filter @rafoworks/api test:coverage",
+    "lint": "eslint packages/*/src/",
+    "lint:fix": "eslint packages/*/src/ --fix",
+    "format": "prettier --write 'packages/*/src/**/*.ts'",
+    "format:check": "prettier --check 'packages/*/src/**/*.ts'",
+    "check": "pnpm typecheck && pnpm lint && pnpm knip",
+    "knip": "knip",
+    "gate": "node scripts/deploy-gate.cjs --check",
+    "docs:lint": "node scripts/docs-lint.cjs",
+    "changelog:collate": "node scripts/changelog-collate.cjs",
+    "check:sizes": "node scripts/check-file-sizes.cjs",
+    "scrub": "node scripts/scrub-gate.cjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd"]
+  },
+  "devDependencies": {
+    "@vitest/coverage-istanbul": "^4.1.2",
+    "eslint": "^10.1.0",
+    "knip": "^6.14.2",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.2"
+  }
+}

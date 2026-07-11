@@ -1,0 +1,22 @@
+name = "rafoworks-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Service binding (RPC) → the api's ToolsEntrypoint. NAMED entrypoint = only this
+# worker (which declares the binding) can call it, and it's read-only.
+[[services]]
+binding = "API"
+service = "rafoworks-api"
+entrypoint = "ToolsEntrypoint"
+
+[observability]
+enabled = true
+
+[vars]
+ENVIRONMENT = "production"
+
+# Production note: this skeleton exposes /mcp unauthenticated for clarity. Before
+# exposing it publicly, put OAuth in front — the Cloudflare pattern is
+# `@cloudflare/workers-oauth-provider` wrapping this handler (the worker becomes the
+# MCP's OAuth server). See docs/reference/mcp.md.

@@ -1,0 +1,12 @@
+{
+  // Internal package (Just-in-Time): consumed as SOURCE via package.json#exports
+  // (-> ./src/index.ts). It does NOT emit — no build, no dist, no composite. The
+  // consumer's bundler (esbuild/wrangler) and vitest transpile the source directly.
+  // Keeping it this way guarantees ONE source of truth: what typecheck validates ==
+  // what ships. Do NOT reintroduce `paths`, `references`, or a dist/ build here.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,16 @@
+{
+  "workspaces": {
+    "packages/shared": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/api": {
+      "entry": ["src/workflows/*.ts"],
+      "project": ["src/**/*.ts"],
+      "ignoreDependencies": ["cloudflare"]
+    },
+    "packages/mcp": {
+      "project": ["src/**/*.ts"]
+    }
+  },
+  "ignoreExportsUsedInFile": true
+}

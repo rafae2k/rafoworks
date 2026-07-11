@@ -1,0 +1,91 @@
+name = "rafoworks-api"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# --- D1 (SQLite at the edge) ---
+# Create your own: `wrangler d1 create rafoworks-db`, then paste the id here.
+[[d1_databases]]
+binding = "DB"
+database_name = "rafoworks-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "drizzle"
+
+# --- KV (cache / correlation markers) ---
+# Create: `wrangler kv namespace create CACHE`
+[[kv_namespaces]]
+binding = "CACHE"
+id = "0000000000000000000000000000000000"
+
+# --- R2 (raw payload archive, for replay) ---
+[[r2_buckets]]
+binding = "RAW_STORAGE"
+bucket_name = "rafoworks-raw-data"
+
+# --- Queues (the async artery) ---
+[[queues.producers]]
+binding = "WEBHOOK_QUEUE"
+queue = "webhook-events"
+
+# Domain events (order.paid, ...) — the arm business consumers subscribe to,
+# kept separate from raw webhooks on purpose (different retention + retry needs).
+[[queues.producers]]
+binding = "DOMAIN_EVENTS_QUEUE"
+queue = "domain-events"
+
+# Consumers. max_concurrency caps the workflow spawn rate so a burst doesn't
+# saturate the Workflows engine — let the backlog grow at the peak instead of
+# dropping the engine. High max_retries + exponential backoff IN CODE
+# (msg.retry({delaySeconds})) turns the queue into an outage buffer: 10 tries
+# backing off to ~1h survives hours of a downstream being down; the DLQ captures
+# whatever still dies so nothing vanishes silently.
+[[queues.consumers]]
+queue = "webhook-events"
+max_batch_size = 5
+max_concurrency = 5
+max_retries = 10
+retry_delay = 60
+dead_letter_queue = "webhook-events-dlq"
+
+[[queues.consumers]]
+queue = "domain-events"
+max_batch_size = 10
+max_concurrency = 3
+max_retries = 10
+retry_delay = 60
+dead_letter_queue = "domain-events-dlq"
+
+# DLQ consumers: a dead message NEVER disappears silently — it becomes a queryable
+# log line + a webhook_log 'dead_letter' row. No DLQ-of-DLQ: the handler always acks.
+[[queues.consumers]]
+queue = "webhook-events-dlq"
+max_batch_size = 10
+max_retries = 1
+
+[[queues.consumers]]
+queue = "domain-events-dlq"
+max_batch_size = 10
+max_retries = 1
+
+# --- Workflows (durable execution) ---
+[[workflows]]
+name = "order-sync"
+binding = "ORDER_WORKFLOW"
+class_name = "OrderSyncWorkflow"
+
+# --- Cron (reconciliation safety net) ---
+# Hourly sweep that re-drives events genuinely lost (outage, dropped message).
+# Prevent > detect > reconcile: this is the net, not the primary path.
+[triggers]
+crons = ["0 * * * *"]
+
+# --- Observability (CF Workers Logs + optional Axiom via OTEL) ---
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[version_metadata]
+binding = "CF_VERSION_METADATA"
+
+[vars]
+ENVIRONMENT = "production"

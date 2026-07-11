@@ -1,0 +1,18 @@
+# .envrc — local environment for rafoworks (loaded via direnv: `direnv allow`)
+#
+# Copy to `.envrc` and fill in real values. NEVER commit `.envrc` (it's gitignored).
+# Worker runtime secrets go in Workers Secrets (`wrangler secret put`), not here —
+# this file is only for local commands (wrangler, scripts).
+
+# --- Cloudflare (wrangler deploy / dev) ---
+export CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
+export CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
+
+# --- Observability (optional — logs read-only for the debug MCP) ---
+export AXIOM_TOKEN="your-axiom-api-token"
+export AXIOM_URL="https://api.axiom.co"
+export AXIOM_DATASET="rafoworks-workers"
+
+# --- Example external source (the demo adapter) ---
+export EXAMPLE_API_TOKEN="your-example-source-token"
+export EXAMPLE_WEBHOOK_TOKEN="your-example-webhook-token"
