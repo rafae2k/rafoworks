@@ -1,5 +1,7 @@
 # rafoworks
 
+[![CI](https://github.com/rafae2k/rafoworks/actions/workflows/ci.yml/badge.svg)](https://github.com/rafae2k/rafoworks/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **An event-driven integration platform on Cloudflare Workers — batteries included, agent-native.**
 
 Most Workers starters give you a router and a `hello world`. Real integration work — webhooks from vendors, payments, ERPs, carriers — needs more: durable events, idempotency, dead-letter queues, reconciliation, structured observability, and a way for an LLM to safely read production. rafoworks is that skeleton, distilled from a production platform, with the vendor-specific parts stripped out and one clean example of each primitive left in.
