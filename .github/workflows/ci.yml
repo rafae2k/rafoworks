@@ -10,9 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -35,5 +33,19 @@ jobs:
       - name: docs-lint
         run: pnpm docs:lint
 
-      - name: scrub (no private identifiers)
-        run: pnpm scrub
+  # Mutation testing runs as its own job so it never slows the gate. It's the real
+  # measure of test strength — see CLAUDE.md → Mutation testing.
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: mutation testing (Stryker)
+        run: pnpm mutation

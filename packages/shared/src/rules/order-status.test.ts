@@ -43,10 +43,21 @@ describe("isTerminal", () => {
 })
 
 describe("normalizeSourceStatus", () => {
-  it("maps known vendor synonyms to our vocabulary", () => {
+  it("maps every known vendor synonym to our vocabulary", () => {
+    expect(normalizeSourceStatus("pending")).toBe("pending")
+    expect(normalizeSourceStatus("created")).toBe("pending")
+    expect(normalizeSourceStatus("waiting_payment")).toBe("pending")
+    expect(normalizeSourceStatus("paid")).toBe("paid")
     expect(normalizeSourceStatus("APPROVED")).toBe("paid")
+    expect(normalizeSourceStatus("confirmed")).toBe("paid")
+    expect(normalizeSourceStatus("fulfilled")).toBe("fulfilled")
     expect(normalizeSourceStatus("shipped")).toBe("fulfilled")
+    expect(normalizeSourceStatus("in_transit")).toBe("fulfilled")
+    expect(normalizeSourceStatus("delivered")).toBe("delivered")
     expect(normalizeSourceStatus(" Completed ")).toBe("delivered")
+    expect(normalizeSourceStatus("cancelled")).toBe("cancelled")
+    expect(normalizeSourceStatus("canceled")).toBe("cancelled")
+    expect(normalizeSourceStatus("refunded")).toBe("cancelled")
   })
 
   it("returns null for unknown statuses instead of guessing", () => {

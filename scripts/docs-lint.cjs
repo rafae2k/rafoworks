@@ -56,9 +56,12 @@ function parseFrontmatter(text) {
 
 function checkLinks(file, text) {
   const dir = path.dirname(file)
+  // Strip fenced + inline code first, so code (e.g. `arr[i](fn())`) isn't mistaken
+  // for a markdown link. Replace with newlines to keep the regex from bridging lines.
+  const prose = text.replace(/```[\s\S]*?```/g, (m) => m.replace(/[^\n]/g, " ")).replace(/`[^`]*`/g, " ")
   const re = /\[[^\]]*\]\(([^)]+)\)/g
   let m
-  while ((m = re.exec(text))) {
+  while ((m = re.exec(prose))) {
     let target = m[1].trim()
     if (/^(https?:|mailto:|#|tel:)/.test(target)) continue
     target = target.split("#")[0]

@@ -14,5 +14,6 @@ What changed in production. Generated from per-cycle fragments (`docs/cycles/NN/
 ## 2026-07-11
 - **Cycle 1** — Initial platform skeleton: webhook → queue → workflow → D1, with an idempotent order sync, a reconcile cron, and a read-only MCP surface. ([cycle](cycles/0001-example-order-sync/))
 - **Cycle 1** — Add a React + Vite web dashboard (served as a Worker via Static Assets); fat-webhook path so the example materializes an order with no external source. ([cycle](cycles/0001-example-order-sync/))
+- **Cycle 1** — Emit a wide event on every workflow invocation (observability parity with http/queue/cron) + CF Logs/Traces export config for Axiom over OTEL. ([cycle](cycles/0001-example-order-sync/))
 
 <!-- collate:end -->

@@ -15,7 +15,11 @@ describe("upsertOrderFromSource (seam: real D1)", () => {
       customerName: "Ada",
       totalCents: 4990,
     })
-    expect((await getOrderById(db, "example:o-up-1"))?.status).toBe("paid")
+    expect(await getOrderById(db, "example:o-up-1")).toMatchObject({
+      status: "paid",
+      customerName: "Ada",
+      totalCents: 4990,
+    })
 
     // Re-deliver with a new status → same row updates (normalized), no duplicate.
     await upsertOrderFromSource(db, "example", {
@@ -36,6 +40,6 @@ describe("upsertOrderFromSource (seam: real D1)", () => {
         customerName: null,
         totalCents: 0,
       }),
-    ).rejects.toThrow(/unknown status/)
+    ).rejects.toMatchObject({ slug: "unknown_source_status", message: expect.stringContaining("unknown status") })
   })
 })

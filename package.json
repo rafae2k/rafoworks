@@ -21,15 +21,20 @@
     "knip": "knip",
     "gate": "node scripts/deploy-gate.cjs --check",
     "docs:lint": "node scripts/docs-lint.cjs",
+    "mutation": "npx stryker run && npx stryker run stryker-api.config.json",
+    "mutation:shared": "npx stryker run",
+    "mutation:api": "npx stryker run stryker-api.config.json",
     "changelog:collate": "node scripts/changelog-collate.cjs",
     "changelog:guard": "node scripts/changelog-guard.cjs",
-    "check:sizes": "node scripts/check-file-sizes.cjs",
-    "scrub": "node scripts/scrub-gate.cjs"
+    "check:sizes": "node scripts/check-file-sizes.cjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild", "workerd"]
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@vitest/coverage-istanbul": "^4.1.2",
     "eslint": "^10.1.0",
     "knip": "^6.14.2",

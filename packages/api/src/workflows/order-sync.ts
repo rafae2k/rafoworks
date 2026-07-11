@@ -5,6 +5,7 @@ import { ExampleSourceAdapter } from "../adapters/example-source.js"
 import { createDb } from "../db/index.js"
 import { upsertOrderFromSource } from "../services/order.js"
 import { log } from "../lib/logger.js"
+import { createWideEvent, emitWideEvent } from "../lib/wide-event.js"
 import type { Env } from "../lib/types.js"
 import { markWebhookProcessed, markWebhookSkipped } from "./shared.js"
 
@@ -28,28 +29,41 @@ export class OrderSyncWorkflow extends WorkflowEntrypoint<Env, OrderSyncPayload>
   async run(event: WorkflowEvent<OrderSyncPayload>, step: WorkflowStep): Promise<void> {
     const { eventId, source, sourceOrderId, order: fatOrder } = event.payload
 
-    // Fat webhook: the order came with the event — no fetch needed. Thin webhook:
-    // fetch the full order from the source adapter by id.
-    let order = fatOrder
-    if (!order) {
-      if (!sourceOrderId) {
-        await markWebhookSkipped(step, this.env.DB, eventId, "no order and no source order id on event")
+    // One wide event per workflow invocation (see docs/explanation/observability.md).
+    const we = createWideEvent({
+      type: "workflow",
+      workflow_name: "order-sync",
+      version: this.env.CF_VERSION_METADATA?.id ?? "dev",
+      environment: this.env.ENVIRONMENT,
+      source_system: source,
+      source_order_id: sourceOrderId ?? undefined,
+    })
+
+    try {
+      // Fat webhook: the order came with the event — no fetch needed. Thin webhook:
+      // fetch the full order from the source adapter by id.
+      let order = fatOrder
+      if (!order) {
+        if (!sourceOrderId) {
+          we.outcome = "skipped"
+          await markWebhookSkipped(step, this.env.DB, eventId, "no order and no source order id on event")
+          return
+        }
+        order = await step.do("fetch-order", async () => {
+          const adapter = new ExampleSourceAdapter(this.env.EXAMPLE_API_TOKEN)
+          return adapter.fetchOrder(sourceOrderId)
+        })
+      }
+
+      if (!order) {
+        we.outcome = "skipped"
+        await markWebhookSkipped(step, this.env.DB, eventId, "order not found in source")
         return
       }
-      order = await step.do("fetch-order", async () => {
-        const adapter = new ExampleSourceAdapter(this.env.EXAMPLE_API_TOKEN)
-        return adapter.fetchOrder(sourceOrderId)
+
+      await step.do("upsert-order", async () => {
+        await upsertOrderFromSource(createDb(this.env.DB), source, order)
       })
-    }
-
-    if (!order) {
-      await markWebhookSkipped(step, this.env.DB, eventId, "order not found in source")
-      return
-    }
-
-    await step.do("upsert-order", async () => {
-      await upsertOrderFromSource(createDb(this.env.DB), source, order)
-    })
 
     // Emit a domain event onto the business arm (domain-events queue). Consumers
     // there — analytics, CRM sync, notifications — subscribe to the domain, blind to
@@ -66,7 +80,14 @@ export class OrderSyncWorkflow extends WorkflowEntrypoint<Env, OrderSyncPayload>
       await this.env.DOMAIN_EVENTS_QUEUE.send(envelope)
     })
 
-    log.info({ event: "order.synced", source, source_order_id: order.sourceOrderId, order_status: order.rawStatus })
-    await markWebhookProcessed(step, this.env.DB, eventId)
+      log.info({ event: "order.synced", source, source_order_id: order.sourceOrderId, order_status: order.rawStatus })
+      await markWebhookProcessed(step, this.env.DB, eventId)
+    } catch (err) {
+      we.outcome = "error"
+      we.error_message = err instanceof Error ? err.message : String(err)
+      throw err
+    } finally {
+      emitWideEvent(we)
+    }
   }
 }

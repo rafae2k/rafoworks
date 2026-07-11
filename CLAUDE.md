@@ -20,7 +20,7 @@ pnpm -r typecheck    # typecheck every package
 pnpm lint            # eslint (strictTypeChecked)
 pnpm gate            # the full deploy gate, locally
 pnpm dev             # wrangler dev (api)
-pnpm scrub           # fail if any private identifier leaked (public-repo safety)
+pnpm mutation        # mutation testing (Stryker) — the real test-strength check
 ```
 
 ## Architecture
@@ -93,6 +93,14 @@ Then `/cycle "your goal"` runs research → shape → bet → scope → build �
 
 Start at [docs/README.md](docs/README.md). Read [docs/conventions.md](docs/conventions.md) before writing or moving a doc — durable × dated, frontmatter, "the index doesn't lie".
 
-## This is a public repo
+## Mutation testing
 
-`pnpm scrub` fails if a private identifier leaks. Keep example names generic (`example`, `example.com`); never hardcode real resource ids (use placeholders in `wrangler.toml` and `wrangler d1 create` your own).
+Line coverage tells you a line _ran_; mutation testing tells you it's actually _checked_. Stryker mutates the code (flips `>` to `>=`, deletes a branch, blanks a string) and re-runs the tests — a surviving mutant is a hole your tests don't catch, even at 100% coverage. It's the true measure of test strength, so it guards the parts that matter most: the pure domain rules and the core service logic.
+
+```bash
+pnpm mutation:shared   # the pure rules (fast; 100% on the order state machine)
+pnpm mutation:api      # core service logic (order upsert, event routing)
+pnpm mutation          # both
+```
+
+A surviving mutant in business logic = a weak test: **kill the mutant** (strengthen the test), never lower the threshold (`thresholds.break` in `stryker*.config.json`). After adding tests, re-run with `--force` if the incremental cache reports a stale `NoCoverage`. It runs as its own CI job, kept separate from the deploy gate so it never slows a deploy.

@@ -79,11 +79,30 @@ class_name = "OrderSyncWorkflow"
 [triggers]
 crons = ["0 * * * *"]
 
-# --- Observability (CF Workers Logs + optional Axiom via OTEL) ---
+# --- Observability ---
+# Three layers (see docs/explanation/observability.md):
+#   1. structured logs (lib/logger.ts) — JSON per log, event slug + business context
+#   2. wide events (lib/wide-event.ts) — ONE JSON per invocation (http/queue/cron/workflow)
+#   3. CF Workers Logs + Traces, exported to Axiom via OTEL (below)
+# To export to Axiom: create destinations named "axiom-logs" / "axiom-traces" in the
+# Cloudflare dashboard (Workers → Observability → destinations), then uncomment the
+# `destinations` lines. Without them, logs/traces stay in CF Workers Logs.
 [observability]
 enabled = true
 head_sampling_rate = 1
 
+[observability.logs]
+invocation_logs = true
+head_sampling_rate = 1
+# destinations = ["axiom-logs"]
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+# destinations = ["axiom-traces"]
+
+# Exposes the deploy version id to the Worker (env.CF_VERSION_METADATA.id) — every
+# wide event is stamped with it, so you can correlate behavior with a specific deploy.
 [version_metadata]
 binding = "CF_VERSION_METADATA"
 

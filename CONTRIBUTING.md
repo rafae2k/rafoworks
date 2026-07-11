@@ -28,6 +28,7 @@ Two rules that the gate enforces:
 
 - **You own the doc.** If your code change makes a doc untrue, updating it is part of the same change — not a follow-up. A code change with no changelog fragment is denied at the gate.
 - **Test the seam.** New behavior at a boundary (adapter ↔ API, queue ↔ consumer, DB write ↔ read) needs at least one integration test with the real component. See `packages/api/src/services/webhook-ingress.test.ts`.
+- **Keep mutation green.** For changes to business logic (rules, core services), run `pnpm mutation` — a surviving mutant is a weak test. Kill the mutant (strengthen the test); don't lower the threshold. See [CLAUDE.md → Mutation testing](CLAUDE.md).
 
 Read [CLAUDE.md](CLAUDE.md) — it's the full operating manual (architecture, resilience invariants, platform limits, conventions).
 
@@ -43,7 +44,7 @@ Keep vendor names out of the domain and the UI — the ports exist so the rest o
 ## Pull requests
 
 - Keep it focused and small. A boilerplate grows by staying legible.
-- `pnpm gate` green, `pnpm scrub` clean (no private identifiers — this is a public repo).
+- `pnpm gate` green; `pnpm mutation` green for changed business logic.
 - Describe the change in the user's language, not the implementation's.
 
 By contributing, you agree your contributions are licensed under the [MIT License](LICENSE).

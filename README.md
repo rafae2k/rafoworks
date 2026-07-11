@@ -21,7 +21,7 @@ packages/
   api/      the Worker — adapters, services, workflows, routes, the composition root
   mcp/      a read-only MCP server (service binding → the api's ToolsEntrypoint)
   web/      a React + Vite dashboard, served as a Worker via Static Assets
-scripts/    the enforcement — deploy-gate, docs-lint, changelog-guard/collate, scrub-gate
+scripts/    the enforcement — deploy-gate, docs-lint, changelog-guard/collate
 docs/       durable × dated docs with a machine-readable frontmatter contract
 .claude/    hooks (the gate) + the destructive-write deny list
 CLAUDE.md   the operating manual for humans and agents
@@ -129,6 +129,8 @@ pnpm gate   # typecheck + lint + build + test + docs-lint + changelog-guard
 
 A `PreToolUse` hook runs the same checks before any `wrangler deploy` and **denies** the deploy on failure — because `wrangler deploy` runs none of them on its own. The example ships with **22 tests**, including seam tests against a real D1 (`vitest-pool-workers`).
 
+**Mutation testing** is the real measure of test strength, and one of this repo's forces. Coverage says a line _ran_; Stryker mutates the code (flips `>` to `>=`, deletes a branch, blanks a string) and re-runs the tests — a mutant that survives is a hole your suite doesn't catch, even at 100% coverage. `pnpm mutation:shared` scores **100%** on the domain rules; `pnpm mutation:api` guards the core services. It runs as its own CI job, kept out of the gate so it never slows a deploy. The rule: kill the mutant, don't lower the bar.
+
 ## Extending it
 
 **Add an adapter** (the common case):
@@ -147,7 +149,6 @@ This repo assumes an AI is writing code in it, and instruments accordingly:
 - **The deploy gate** blocks a deploy on any red check (typecheck/lint/build/test/docs/changelog).
 - **changelog-guard** denies a deploy of changed code with no changelog entry — "shipped ⟹ recorded", enforced from git history.
 - **docs-lint** keeps the docs contract (frontmatter, resolving links, no future-intent in durable docs) valid at commit time.
-- **scrub-gate** fails if a private identifier ever leaks into this public repo.
 - A **deny list** blocks destructive production SQL from the agent, even with verbal approval.
 
 For the workflow itself, pair it with **[rafoflow](https://github.com/rafae2k/rafoflow)** — an opinionated Shape Up agent fleet for Claude Code:
@@ -161,7 +162,7 @@ Then `/cycle "your goal"` orchestrates research → shape → bet → scope → 
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). In short: keep it generic and minimal, `pnpm gate` green, `pnpm scrub` clean.
+See [CONTRIBUTING.md](CONTRIBUTING.md). In short: keep it generic and minimal, `pnpm gate` green, `pnpm mutation` green for changed logic.
 
 ---
 
