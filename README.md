@@ -4,13 +4,13 @@
 
 **An opinionated, event-driven integration platform on Cloudflare Workers — batteries included, agent-native.**
 
-Most Workers starters give you a router and a `hello world`. Real integration work — webhooks from vendors, payments, ERPs, carriers — needs more: durable events, idempotency, dead-letter queues, reconciliation, structured observability, a read-only surface an agent can safely query, and a dashboard. rafoworks is that skeleton, distilled from a production platform, with the vendor-specific parts stripped out and one clean, runnable example of each primitive left in.
+Most Workers starters give you a router and a `hello world`. Real integration work — webhooks from vendors, payments, ERPs, carriers — needs more: durable events, idempotency, dead-letter queues, reconciliation, [structured observability](docs/explanation/observability.md), a read-only surface an agent can safely query, and a dashboard. rafoworks is that skeleton, distilled from a production platform, with the vendor-specific parts stripped out and one clean, runnable example of each primitive left in.
 
 ## Why this exists
 
 - **Why an integration platform, not a router.** Integrations fail in ways a request/response app doesn't: a webhook arrives twice, a downstream is down for an hour, an event gets dropped, two events race. A router has no answer for any of these. rafoworks bakes in the answers — dedup, durable retries, a reconciliation net — so you don't rediscover them in an incident.
 - **Why event-driven.** Turning every inbound webhook into a durable, idempotent event (webhook → queue → workflow → D1) decouples _receiving_ from _processing_. The queue becomes an outage buffer; the workflow gives you durable, resumable execution; the domain-events arm lets business consumers subscribe without touching ingestion.
-- **Why opinionated.** Every convention here prevents a _class_ of failure that a typechecker can't see — a race, silent drift, a broken contract. They're written down as [resilience invariants](docs/explanation/architecture.md). Opinionated defaults are the point: you inherit the scars, not the incidents.
+- **Why opinionated.** Every convention here prevents a _class_ of failure that a typechecker can't see — a race, silent drift, a broken contract. They're written down as [resilience invariants](docs/explanation/resilience.md), each with the trap and the real code that avoids it. Opinionated defaults are the point: you inherit the scars, not the incidents.
 - **Why Cloudflare Workers.** D1, KV, Queues, Workflows, and R2 are one platform, at the edge, with a generous free tier and no servers to run. The whole pipeline in this repo deploys as three small workers.
 
 ## What's inside
@@ -131,6 +131,26 @@ A `PreToolUse` hook runs the same checks before any `wrangler deploy` and **deni
 
 **Mutation testing** is the real measure of test strength, and one of this repo's forces. Coverage says a line _ran_; Stryker mutates the code (flips `>` to `>=`, deletes a branch, blanks a string) and re-runs the tests — a mutant that survives is a hole your suite doesn't catch, even at 100% coverage. `pnpm mutation:shared` scores **100%** on the domain rules; `pnpm mutation:api` guards the core services. It runs as its own CI job, kept out of the gate so it never slows a deploy. The rule: kill the mutant, don't lower the bar.
 
+## Documentation
+
+Deep dives on how each piece works — every one grounded in the real code, not hand-waving. Index at [docs/README.md](docs/README.md).
+
+**Understand the platform:**
+
+- [Architecture](docs/explanation/architecture.md) — hexagonal + event-driven, the resilience invariants, platform limits.
+- [The event-driven pipeline](docs/explanation/pipeline.md) — one webhook traced end to end: ingress → queue → dispatch → workflow → D1 → domain events.
+- [Durable workflows](docs/explanation/durable-workflows.md) — Cloudflare Workflows: `step.do`, resume-after-crash, idempotent steps, deterministic instance ids.
+- [Observability](docs/explanation/observability.md) — structured logs → wide events → CF Logs/Traces over OTEL to Axiom, with real JSON and query examples.
+- [Resilience invariants](docs/explanation/resilience.md) — the six invariants, each with the trap and the code that avoids it.
+- [Testing](docs/explanation/testing.md) — unit vs seam tests (against a real D1) and mutation testing.
+
+**Do things:**
+
+- [Add an adapter](docs/how-to/add-an-adapter.md) — a runbook to plug in a real source end to end.
+- [The MCP server](docs/reference/mcp.md) — the read-only agent surface + putting OAuth in front of it.
+
+And the operating manual, [CLAUDE.md](CLAUDE.md) — the conventions, invariants, and platform limits an agent (or human) works under here.
+
 ## Extending it
 
 **Add an adapter** (the common case):
@@ -158,7 +178,7 @@ For the workflow itself, pair it with **[rafoflow](https://github.com/rafae2k/ra
 /plugin install shapeup@rafoflow
 ```
 
-Then `/cycle "your goal"` orchestrates research → shape → bet → scope → build → review → ship, leaving an artifact trail in `docs/cycles/`. rafoflow ships the **method**; this repo ships the **enforcement** that makes it non-optional. Read [CLAUDE.md](CLAUDE.md) for the full operating manual and [docs/explanation/architecture.md](docs/explanation/architecture.md) for the resilience invariants.
+Then `/cycle "your goal"` orchestrates research → shape → bet → scope → build → review → ship, leaving an artifact trail in `docs/cycles/`. rafoflow ships the **method**; this repo ships the **enforcement** that makes it non-optional. Read [CLAUDE.md](CLAUDE.md) for the full operating manual, and the [documentation](#documentation) above for how every piece works.
 
 ## Contributing
 
